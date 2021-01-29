@@ -1,5 +1,7 @@
 
 
+mkdir SGD_data
+cd SGD_data
 
 wget http://sgd-archive.yeastgenome.org/curation/chromosomal_feature/SGD_features.tab
 wget http://sgd-archive.yeastgenome.org/curation/chromosomal_feature/chromosome_length.tab
@@ -13,6 +15,7 @@ wget http://sgd-archive.yeastgenome.org/curation/literature/go_protein_complex_s
 wget http://sgd-archive.yeastgenome.org/curation/literature/gene_association.sgd.gaf.gz
 wget http://sgd-archive.yeastgenome.org/curation/chromosomal_feature/dbxref.tab
 
+cd ..
 
 sqlite3 SCERES.db;
 .databases
@@ -222,7 +225,7 @@ CREATE TABLE go_slim_mapping(
 .import /home/thibault/SQL_Database/SGD_data/protein_properties.tab protein_properties
 
 .import /home/thibault/SQL_Database/SGD_data/gene_association.sgd.gaf gene_associations
-##A 16 column ? note at the beginning of the file ?
+##Why 16 column ? How to deal with the note at the beginning of the file ?
 
 .import /home/thibault/SQL_Database/SGD_data/go_terms.tab go_terms
 .import /home/thibault/SQL_Database/SGD_data/go_slim_mapping.tab go_slim_mapping
