@@ -1,25 +1,5 @@
 
-
-mkdir SGD_data
-cd SGD_data
-
-wget http://sgd-archive.yeastgenome.org/curation/chromosomal_feature/SGD_features.tab
-wget http://sgd-archive.yeastgenome.org/curation/chromosomal_feature/chromosome_length.tab
-wget http://sgd-archive.yeastgenome.org/curation/literature/biochemical_pathways.tab
-wget http://sgd-archive.yeastgenome.org/curation/literature/gene_literature.tab
-wget http://sgd-archive.yeastgenome.org/curation/literature/interaction_data.tab
-wget http://sgd-archive.yeastgenome.org/curation/literature/phenotype_data.tab
-wget http://sgd-archive.yeastgenome.org/curation/literature/go_terms.tab
-wget http://sgd-archive.yeastgenome.org/curation/literature/go_slim_mapping.tab
-wget http://sgd-archive.yeastgenome.org/curation/literature/go_protein_complex_slim.tab
-wget http://sgd-archive.yeastgenome.org/curation/literature/gene_association.sgd.gaf.gz
-wget http://sgd-archive.yeastgenome.org/curation/chromosomal_feature/dbxref.tab
-
-cd ..
-
-sqlite3 SCERES.db;
-.databases
-
+-----Schema_SCERES-----
 
 CREATE TABLE SGD_features(
   Primary_SGDID TEXT PRIMARY KEY,
@@ -39,7 +19,7 @@ CREATE TABLE SGD_features(
   Sequence_version TEXT,
   Description TEXT);
 
-#####Parent ?
+--Parent ?
 
 CREATE TABLE chromosome_length(
   chromosome TEXT,
@@ -79,7 +59,7 @@ CREATE TABLE dbxref(
   FOREIGN KEY(SGDID) REFERENCES SGD_features(Primary_SGDID) ON DELETE SET NULL
 );
 
-##"Feature_name" <--> "S. cerevisiae feature name" field in dbxref.tab
+--"Feature_name" <--> "S. cerevisiae feature name" field in dbxref.tab
 
 CREATE TABLE phenotypes(
   Feature_Name TEXT NOT NULL,
@@ -161,7 +141,7 @@ CREATE TABLE protein_properties(
 );
 
 
-##Headlines ?? ORF = Gene name + ezfze ?
+--Headlines ?? ORF = Gene name + unknown ?
 
 
 CREATE TABLE gene_associations(
@@ -180,9 +160,11 @@ CREATE TABLE gene_associations(
   Taxon             TEXT,
   Annotation_date   TEXT,
   Assigned_b        TEXT,
+  gene_name         TEXT,
   FOREIGN KEY(SGDID) REFERENCES SGD_features(Primary_SGDID) ON DELETE SET NULL
 );
 
+--Why gene names in column 16 ? Not in README file
 
 CREATE TABLE go_terms(
   GO_ID              TEXT NOT NULL,
@@ -204,30 +186,3 @@ CREATE TABLE go_slim_mapping(
   FOREIGN KEY(GO_ID) REFERENCES gene_associations(GO_ID) ON DELETE SET NULL
   FOREIGN KEY(SGDID) REFERENCES SGD_features(Primary_SGDID) ON DELETE SET NULL
 );
-
-
-.tables
-.schema SGD_features
-
-
-.mode csv
-.separator "\t"
-.import /home/thibault/SQL_Database/SGD_data/SGD_features.tab SGD_features
-.import /home/thibault/SQL_Database/SGD_data/chromosome_length.tab chromosome_length
-.import /home/thibault/SQL_Database/SGD_data/biochemical_pathways.tab biochemical_pathways
-.import /home/thibault/SQL_Database/SGD_data/gene_literature.tab gene_literature
-.import /home/thibault/SQL_Database/SGD_data/dbxref.tab dbxref
-
-.import /home/thibault/SQL_Database/SGD_data/phenotype_data.tab phenotypes
-###where is the problematique " ?
-
-.import /home/thibault/SQL_Database/SGD_data/interaction_data.tab interactions
-.import /home/thibault/SQL_Database/SGD_data/protein_properties.tab protein_properties
-
-.import /home/thibault/SQL_Database/SGD_data/gene_association.sgd.gaf gene_associations
-##Why 16 column ? How to deal with the note at the beginning of the file ?
-
-.import /home/thibault/SQL_Database/SGD_data/go_terms.tab go_terms
-.import /home/thibault/SQL_Database/SGD_data/go_slim_mapping.tab go_slim_mapping
-
-.exit
