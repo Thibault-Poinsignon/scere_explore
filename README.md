@@ -15,7 +15,7 @@ git clone https://github.com/Thibault-Poinsignon/sceres_database.git
 
 3- Execute the following command lines :
 
-Download the data the associated readme files from the SGD database.
+Download the data and associated .readme files from the SGD database.
 ```
 bash download_SGD_data.sh
 ```
