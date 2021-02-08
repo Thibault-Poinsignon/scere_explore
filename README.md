@@ -11,7 +11,9 @@ conda env create -f environment.yml
 ## How to create the SCERES database ?
 
 1- Clone the repository in your working directory:
+```
 git clone https://github.com/Thibault-Poinsignon/sceres_database.git
+```
 
 3- Execute the following command lines :
 
