@@ -35,4 +35,4 @@ Import the data from the .tab files into SCERES tables.
 sqlite3 SCERES.db < import_SGD_data_to_tables.sql
 ```
 
-The database file "SCERES.db" can be open with DB browser https://sqlitebrowser.org/.
+The database file `SCERES.db` can be open with [DB browser](https://sqlitebrowser.org/).
