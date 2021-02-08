@@ -13,4 +13,3 @@ dependencies:
   - jupyterlab
   - matplotlib
   - pandas
-prefix: /home/thibault/miniconda3/envs/sceres 
