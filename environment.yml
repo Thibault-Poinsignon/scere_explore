@@ -1,0 +1,15 @@
+name: sceres
+# channels priority
+# see https://bioconda.github.io/
+# conda-forge has highest prioriy
+channels:
+  - defaults
+  - bioconda
+  - conda-forge
+dependencies:
+  - sqlite
+  - sqlitebrowser
+  - python
+  - jupyterlab
+  - matplotlib
+  - pandas
