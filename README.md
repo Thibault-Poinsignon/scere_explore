@@ -14,13 +14,20 @@ cd sceres_database
 
 Create a [conda](https://docs.conda.io/en/latest/miniconda.html) environment:
 ```
-conda env create -f environment.yml
+conda env create -f binder/environment.yml
+```
+
+Install remaining packages with `apt`:
+```
+grep -vE '^#' binder/apt.txt | xargs sudo apt install -y
 ```
 
 Load the conda env:
 ```
 conda activate sceres
 ```
+
+
 ## Build the SCERES database
 
 
