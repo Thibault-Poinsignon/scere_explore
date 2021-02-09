@@ -1,16 +1,13 @@
-
------Import_SGD_data-----
-
 .mode csv
 .separator "\t"
-.import ./SGD_data/SGD_features.tab SGD_features
-.import ./SGD_data/chromosome_length.tab chromosome_length
-.import ./SGD_data/biochemical_pathways.tab biochemical_pathways
-.import ./SGD_data/gene_literature.tab gene_literature
-.import ./SGD_data/dbxref.tab dbxref
-.import ./SGD_data/phenotype_data.tab phenotypes
-.import ./SGD_data/interaction_data.tab interactions
-.import ./SGD_data/protein_properties.tab protein_properties
-.import ./SGD_data/gene_association.sgd.gaf gene_associations
-.import ./SGD_data/go_terms.tab go_terms
-.import ./SGD_data/go_slim_mapping.tab go_slim_mapping
+.import ./data/SGD/SGD_features.tab SGD_features
+.import ./data/SGD/chromosome_length.tab chromosome_length
+.import ./data/SGD/biochemical_pathways.tab biochemical_pathways
+.import ./data/SGD/gene_literature.tab gene_literature
+.import ./data/SGD/dbxref.tab dbxref
+.import ./data/SGD/phenotype_data.tab phenotypes
+.import ./data/SGD/interaction_data.tab interactions
+.import ./data/SGD/protein_properties.tab protein_properties
+.import ./data/SGD/gene_association.sgd.gaf gene_associations
+.import ./data/SGD/go_terms.tab go_terms
+.import ./data/SGD/go_slim_mapping.tab go_slim_mapping
