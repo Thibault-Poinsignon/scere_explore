@@ -1,2 +1,5 @@
 data
 SCERES.db
+
+# notebook checkpoints
+**/.ipynb_checkpoints/
