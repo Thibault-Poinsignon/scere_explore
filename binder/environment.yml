@@ -7,8 +7,11 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
-  - sqlite
   - python
-  - jupyterlab
-  - matplotlib
   - pandas
+  - jupyterlab
+  - ipywidgets
+  - matplotlib
+  - plotly
+  - sqlite
+  - nodejs

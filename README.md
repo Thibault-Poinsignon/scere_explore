@@ -17,21 +17,26 @@ Create a [conda](https://docs.conda.io/en/latest/miniconda.html) environment:
 conda env create -f binder/environment.yml
 ```
 
-Install remaining packages with `apt`:
-```
-grep -vE '^#' binder/apt.txt | xargs sudo apt install -y
-```
-
-Load the conda env:
+Load the `sceres` conda environment:
 ```
 conda activate sceres
 ```
 
+Activate Jupyter lab extensions:
+```
+bash binder/postBuild
+```
+
+Optionally, install DB Browser for SQLite with `apt`:
+```
+grep -vE '^#' binder/apt.txt | xargs sudo apt install -y
+```
+
+
 
 ## Build the SCERES database
 
-
-Download data and associated `.README` files from the SGD database:
+Download data and associated `.README` files from the [SGD database](https://www.yeastgenome.org/):
 ```
 bash download_SGD_data.sh
 ```
@@ -51,4 +56,4 @@ Import data from the SGD:
 sqlite3 SCERES.db < import_SGD_data_to_tables.sql
 ```
 
-The database file `SCERES.db` can be open with [DB Browser for SQLite ](https://sqlitebrowser.org/).
+The database file `SCERES.db` can be open with [DB Browser for SQLite](https://sqlitebrowser.org/).
