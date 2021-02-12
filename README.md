@@ -1,15 +1,15 @@
-# SCERES database
+# SCERE database
 
 ## Setup your environment
 
 Clone the repository:
 ```
-git clone https://github.com/Thibault-Poinsignon/sceres_database.git
+git clone https://github.com/Thibault-Poinsignon/scere_database.git
 ```
 
 Move to the new directory:
 ```
-cd sceres_database
+cd scere_database
 ```
 
 Create a [conda](https://docs.conda.io/en/latest/miniconda.html) environment:
@@ -17,9 +17,9 @@ Create a [conda](https://docs.conda.io/en/latest/miniconda.html) environment:
 conda env create -f binder/environment.yml
 ```
 
-Load the `sceres` conda environment:
+Load the `scere` conda environment:
 ```
-conda activate sceres
+conda activate scere
 ```
 
 Activate Jupyter lab extensions:
@@ -34,7 +34,7 @@ grep -vE '^#' binder/apt.txt | xargs sudo apt install -y
 
 
 
-## Build the SCERES database
+## Build the SCERE database
 
 Download data and associated `.README` files from the [SGD database](https://www.yeastgenome.org/):
 ```
@@ -48,12 +48,12 @@ bash clean_data.sh
 
 Create database and tables:
 ```
-sqlite3 SCERES.db < schema_sceres.sql
+sqlite3 SCERE.db < schema_scere.sql
 ```
 
 Import data from the SGD:
 ```
-sqlite3 SCERES.db < import_SGD_data_to_tables.sql
+sqlite3 SCERE.db < import_SGD_data_to_tables.sql
 ```
 
-The database file `SCERES.db` can be open with [DB Browser for SQLite](https://sqlitebrowser.org/).
+The database file `SCERE.db` can be open with [DB Browser for SQLite](https://sqlitebrowser.org/).

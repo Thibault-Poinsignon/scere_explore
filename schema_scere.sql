@@ -1,5 +1,5 @@
 
------Schema_SCERES-----
+-----Schema_SCERE-----
 
 CREATE TABLE SGD_features(
   Primary_SGDID TEXT PRIMARY KEY,
