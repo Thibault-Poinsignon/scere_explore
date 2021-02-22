@@ -4,12 +4,12 @@
 
 Clone the repository:
 ```
-git clone https://github.com/Thibault-Poinsignon/scere_database.git
+git clone https://github.com/Thibault-Poinsignon/scere_explore.git
 ```
 
 Move to the new directory:
 ```
-cd scere_database
+cd scere_explore
 ```
 
 Create a [conda](https://docs.conda.io/en/latest/miniconda.html) environment:
