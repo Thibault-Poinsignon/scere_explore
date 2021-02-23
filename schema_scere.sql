@@ -160,7 +160,8 @@ CREATE TABLE gene_associations(
   Taxon             TEXT,
   Annotation_date   TEXT,
   Assigned_b        TEXT,
-  gene_name         TEXT,
+  Unknown_1         TEXT,
+  Unknown_2         TEXT,
   FOREIGN KEY(SGDID) REFERENCES SGD_features(Primary_SGDID) ON DELETE SET NULL
 );
 
