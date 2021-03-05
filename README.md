@@ -57,3 +57,9 @@ sqlite3 SCERE.db < import_SGD_data_to_tables.sql
 ```
 
 The database file `SCERE.db` can be open with [DB Browser for SQLite](https://sqlitebrowser.org/).
+
+## Get the 3D coordinates
+
+```
+bash download_3D_coordinated_Data.sh
+```
