@@ -1,0 +1,20 @@
+name: 3Dnetwork
+channels:
+  - defaults
+  - bioconda
+  - conda-forge
+dependencies:
+  - colour
+  - ipycytoscape
+  - ipywidgets
+  - jupyterlab
+  - jupytext
+  - matplotlib
+  - networkx
+  - nodejs
+  - pandas
+  - plotly
+  - python
+  - python=3.8
+  - pyvis
+  - sqlite
