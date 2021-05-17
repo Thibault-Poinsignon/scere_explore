@@ -82,7 +82,7 @@ def format_coordinates(coordinates, space_between_chromosomes):
 
 
 
-#Chromosome shapes.
+# Chromosome shapes.
 
 def get_chromosome_lenght(chrom_number):
     #SQL request
@@ -134,7 +134,7 @@ def format_chromosomes(y1, y2):
     
     return chromosomes
 
-#Genome drawing.
+# Genome drawing.
 
 def genome_drawing(genome_data, mode, parameter, 
                    values = "null", values_colors = "null", threshold = 10**40, hover = []):
@@ -214,7 +214,7 @@ def genome_drawing(genome_data, mode, parameter,
     
     fig.show()
 
-#Adding color.
+# Adding color.
 
 def get_color_discreet(genome_data, parameter, values):
     
@@ -277,9 +277,9 @@ def get_color_continuous(parameter):
     return pd.Series(colors)
 
 
-#######3D VISUALIZATION
+# ######3D VISUALIZATION
 
-####Segments chromosomal coordinates calcul.
+# ###Segments chromosomal coordinates calcul.
 
 def format_segments_dataframe(chrom_number, atoms_coordinates):
     
@@ -344,7 +344,7 @@ def calcul_size_on_chrom(segments_sizes, chrom_lenght, sum_segments_sizes):
     
     return (segments_sizes * chrom_lenght) / sum_segments_sizes
 
-####Segments and locus connexions.
+# ###Segments and locus connexions.
 
 def connect(segments_dataframe, loci):
     loci = loci[loci.Feature_type != 'CDS']
@@ -397,8 +397,8 @@ def get_chrom_info(database, chrom_number, info, source, condition, group_by, or
     chrom = pd.DataFrame(chrom, columns = list_info)
     
     return chrom
-    
-####Format atoms coordinates with segments
+
+# ###Format atoms coordinates with segments
 
 def format_atoms_coordinates_V2(atoms_coordinates, segments_loci):
     
@@ -445,7 +445,7 @@ def format_atoms_coordinates_V2(atoms_coordinates, segments_loci):
 
     return plotly_segments
 
-####Adding colors in 3D
+# ###Adding colors in 3D
 
 def get_color_discreet_3D(genome_data, parameter, values, values_colors):
     

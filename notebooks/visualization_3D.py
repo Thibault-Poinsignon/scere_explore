@@ -84,7 +84,7 @@ def calcul_size_on_chrom(segments_sizes, chrom_lenght, sum_segments_sizes):
     
     return (segments_sizes * chrom_lenght) / sum_segments_sizes
 
-####Segments and locus connexions.
+# ###Segments and locus connexions.
 
 def connect(segments, loci):
     loci = loci[loci.Feature_type != 'CDS']
@@ -110,9 +110,7 @@ def get_intersection(segment, loci):
     locus_on_segment = on.Primary_SGDID[on.on_segment == True]
     locus_on_segment.index = range(1, len(locus_on_segment) + 1)
     
-    first_locus = locus_on_segment.loc[:1]
-    
-    return first_locus
+    return locus_on_segment
 
 def string_to_list(string):
     return list(string.split(", "))
@@ -137,8 +135,8 @@ def get_chrom_info(database, chrom_number, info, source, condition, group_by, or
     chrom = pd.DataFrame(chrom, columns = list_info)
     
     return chrom
-    
-####Format atoms coordinates with segments
+
+# ###Format atoms coordinates with segments
 
 def format_atoms_coordinates_V2(atoms_coordinates, segments_loci):
     
@@ -185,7 +183,7 @@ def format_atoms_coordinates_V2(atoms_coordinates, segments_loci):
 
     return plotly_segments
 
-####Adding colors in 3D
+# ###Adding colors in 3D
 
 def get_color_discreet_3D(genome_data, parameter, values, values_colors):
     
