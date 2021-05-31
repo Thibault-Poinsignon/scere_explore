@@ -212,7 +212,7 @@ def genome_drawing(genome_data, mode, parameter,
     fig.update_layout(hoverlabel = dict(bgcolor="white",
                                         font_size=16))
     
-    fig.show()
+    return fig
 
 # Adding color.
 
