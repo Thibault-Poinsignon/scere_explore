@@ -191,13 +191,32 @@ def get_color_discreet_3D(genome_data, parameter, values, values_colors):
     
     for v, c in zip(values, values_colors):
         genome_data.loc[genome_data[parameter] == v, "colors"] = c
-    
+        
     genome_data.loc[genome_data["Primary_SGDID"].isna() == True, "colors"] = "lightgrey"
 
     return genome_data
 
+# ###3D Genome drawing.
 
+def genome_drawing(whole_genome_segments):
 
+    fig = go.Figure(data=[go.Scatter3d(x = whole_genome_segments.x,
+                                   y = whole_genome_segments.y,
+                                   z = whole_genome_segments.z,
+                                   mode = "lines",
+                                   name = "",
+                                   line = {"color": whole_genome_segments["colors"],
+                                           "width": 12},
+                                   customdata = whole_genome_segments.Primary_SGDID,
+                                   hovertemplate = ("<b>SGDID :</b> %{customdata} <br>"
+                                                    "<b>x :</b> %{x} <br>"),
+                                   hoverlabel = dict(bgcolor = "white", font_size = 16))])
+
+    fig.update_layout(scene=dict(xaxis = dict(showgrid = False, backgroundcolor = "white"),
+                                 yaxis = dict(showgrid = False, backgroundcolor = "white"),
+                                 zaxis = dict(showgrid = False, backgroundcolor = "white")))
+    
+    return fig
 
 
 

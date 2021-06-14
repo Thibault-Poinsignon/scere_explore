@@ -1,5 +1,11 @@
 data
 SCERE.db
+dashboard/python/__pycache__
+notebooks/__pycache__
+dashboard/static
 
 # notebook checkpoints
 **/.ipynb_checkpoints/
+
+#Dashboard notebook version (old)
+notebooks/Dashboard.ipynb

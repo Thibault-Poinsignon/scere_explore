@@ -1,0 +1,20 @@
+name: 3Dnetwork
+channels:
+  - defaults
+dependencies:
+  - matplotlib
+  - plotly
+  - pyvis
+  - networkx
+  - python=3.8
+  - pandas
+  - colour
+  - sqlite
+  - nodejs
+  - jupytext
+  - ipywidgets
+  - ipycytoscape
+  - jupyterlab
+  - jupyter-dash
+  - dash-bootstrap-components
+prefix: /home/thibault/miniconda3/envs/3Dnetwork
