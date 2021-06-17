@@ -15,9 +15,7 @@ import random
 
 import networkx as nx
 import matplotlib.pyplot as plt
-import ipycytoscape
 import matplotlib.pyplot as plt
-import ipywidgets as widgets
 
 import dash
 import dash_core_components as dcc
@@ -36,7 +34,8 @@ GO_terms = pd.read_csv("./static/GO_terms.csv")
 GO_terms_options = [{'label': GO, 'value': GO} for GO in GO_terms["GO_terms"]]
 
 plotly_segments = pd.read_csv("./static/plotly_segments.csv")
-adjacency_matrix = pd.read_csv("./static/adjacency_matrix_V3.csv", index_col = "Primary_SGDID")
+adjacency_matrix = pd.read_parquet("./static/adjacency_matrix.parquet.gzip", engine='pyarrow')
+
 basic_stylesheet = [{
                      'selector': 'node',
                      'style': {'background-color': '#BFD7B5'}},
@@ -58,6 +57,11 @@ header = html.Div(
             ])
         ],
         style = {'padding-down' : '4%', 'padding-top' : '2%'})
+
+summary = html.Details([
+                        html.Summary([html.H3('Introduction')]),
+                        html.Div('[Introduction text]')
+                       ])
 
 ############APP_INPUTS_COMPONENTS############
 
@@ -102,9 +106,10 @@ input_tab1 = html.Div(
                     dcc.Dropdown(
                         id='color-dropdown',
                         options=[
-                            {'label': 'Blue', 'value': 'Blue'},
-                            {'label': 'Red', 'value': 'Red'},
-                            {'label': 'Green', 'value': 'Green'}],
+                            {'label': 'Blue', 'value': 'blue'},
+                            {'label': 'Red', 'value': 'red'},
+                            {'label': 'Green', 'value': 'green'},
+                            {'label': 'Yellow', 'value': 'yellow'}],
                         placeholder="select a color"),
                 ]),
             ]),
@@ -144,7 +149,11 @@ input_tab2 = html.Div(
                     dcc.Dropdown(
                         id='color_scale_dropdown',
                         options=[
-                            {'label': 'rainbow', 'value': 'Rainbow'}],
+                            {'label': 'rainbow (diverging scale)', 'value': 'Rainbow'},
+                            {'label': 'picnic (diverging scale)', 'value': 'Picnic'},
+                            {'label': 'viridis', 'value': 'Viridis'},
+                            {'label': 'plasma', 'value': 'Plasma'},
+                            {'label': 'thermal', 'value': 'thermal'}],
                             placeholder="select a color scale"),
                 ])
             ]),
@@ -230,6 +239,13 @@ visualization_tab1 = html.Div(
                     html.H3('3D Visualization'),
                     dcc.Graph(id = '3D_representation'),
                 ])
+            ]),
+            dbc.Row(
+            [
+                dbc.Col(
+                [
+                    dcc.Graph(id = '3D_representation_chrom'),
+                ])
             ])
         ],
         className = 'shadow p-3 mb-5 bg-body rounded', style = {'padding-top' : '1%'})
@@ -285,11 +301,27 @@ visualization_tab3_network = html.Div(
         ],
         className = 'shadow p-3 mb-5 bg-body rounded', style = {'padding-top' : '1%'})
 
+visualization_tab3_metrics = html.Div(
+        [   dbc.Row(
+            [
+                dbc.Col(
+                [
+                    html.H3('Network metrics'),
+                    html.Div(id='output_edges_number_tab3'),
+                    html.Div(id='output_nodes_number_tab3'),
+                    dcc.Graph(id = 'Degrees_hist')
+                ])
+            ])
+        ],
+        className = 'shadow p-3 mb-5 bg-body rounded', style = {'padding-top' : '1%'})
+
 
 ############APP_LAYOUT############
 
 app.layout = dbc.Container(
       [ header,
+        dbc.Row(style = {'height' : 25}),
+        summary,
         dbc.Row(style = {'height' : 25}),
         dcc.Tabs([
         dcc.Tab(label='Tab one', children=[
@@ -307,7 +339,8 @@ app.layout = dbc.Container(
             input_tab3,
             slider_tab3,
             visualization_tab3_hist,
-            visualization_tab3_network
+            visualization_tab3_network,
+            visualization_tab3_metrics
         ]),
         ])
       ])
@@ -387,44 +420,74 @@ def update_styles(selected_columns):
               State('color-dropdown', 'value'))
 def update_2D_graphs_tab1(n_clicks, input1, input2):
     
-    sql_query = \
+    sql_query_gobal = \
 """SELECT Primary_SGDID, count(SGDID), Feature_name, Start_coordinate, Stop_coordinate, Chromosome, Strand, GO_slim_term
 FROM SGD_features, go_slim_mapping
-WHERE SGDID == Primary_SGDID 
+WHERE SGDID == Primary_SGDID
+GROUP BY SGDID
+ORDER BY Start_coordinate
+"""
+    sql_query_specific = \
+"""SELECT Primary_SGDID, count(SGDID), Feature_name, Start_coordinate, Stop_coordinate, Chromosome, Strand, GO_slim_term
+FROM SGD_features, go_slim_mapping
+WHERE SGDID == Primary_SGDID
 AND (GO_slim_term == """ + "'" + str(input1) + "'" + """)
 GROUP BY SGDID
 ORDER BY Start_coordinate
 """
+    all_loci = tools.get_locus_info("./static/SCERE.db", sql_query_gobal)
+    selected_loci = tools.get_locus_info("./static/SCERE.db", sql_query_specific)
+    
+    loci = pd.concat([all_loci, selected_loci]).drop_duplicates(subset=["Primary_SGDID"], keep = "last")
+    loci = vis2D.format_coordinates(loci, 6)
+    
+    return vis2D.genome_drawing(loci, "discreet", "GO_slim_term", [str(input1)], [str(input2)])
 
-    chrom = tools.get_locus_info("./static/SCERE.db", sql_query)
-    print(chrom)
-    chrom = vis2D.format_coordinates(chrom, 6)
-    return vis2D.genome_drawing(chrom, "discreet", "GO_slim_term", [str(input1)], [str(input2)])
-
-############TAB1_3D_GRAPH############
+############TAB1_3D_GRAPH_FEATURE############
 @app.callback(Output('3D_representation', 'figure'),
               Input('Submit_tab1', 'n_clicks'),
               State('GoTerm-dropdown', 'value'),
               State('color-dropdown', 'value'))
-def update_3D_graphs_tab1(n_clicks, input1, input2):
+def update_3D_graph_tab1(n_clicks, input1, input2):
     
     sql_query = \
-"""SELECT Primary_SGDID, count(SGDID), Feature_name, Start_coordinate, Stop_coordinate, Chromosome, Strand, GO_slim_term
+"""SELECT Primary_SGDID, Feature_name, Start_coordinate, Stop_coordinate, Chromosome, Strand, GO_slim_term
 FROM SGD_features, go_slim_mapping
 WHERE SGDID == Primary_SGDID 
 AND (GO_slim_term == """ + "'" + str(input1) + "'" + """)
 GROUP BY SGDID
 ORDER BY Start_coordinate
 """
+    selected_loci = tools.get_locus_info("../SCERE.db", sql_query)
 
-    whole_genome = tools.get_locus_info("../SCERE.db", sql_query)
-
-    whole_genome_segments = plotly_segments.merge(whole_genome, on = "Primary_SGDID", how = "left", copy = False)
-    whole_genome_segments.index = range(1, len(whole_genome_segments) + 1)
-
-    whole_genome_segments = vis3D.get_color_discreet_3D(whole_genome_segments, "GO_slim_term", [str(input1)], [str(input2)])
+    selected_loci_segments = plotly_segments.merge(selected_loci, on = "Primary_SGDID", how = "left", copy = False)
+    selected_loci_segments.index = range(1, len(selected_loci_segments) + 1)
     
-    return vis3D.genome_drawing(whole_genome_segments)                    
+    selected_loci_segments = vis3D.get_color_discreet_3D(selected_loci_segments, "GO_slim_term", [str(input1)], [str(input2)])
+    
+    return vis3D.genome_drawing(selected_loci_segments)                    
+
+############TAB1_3D_GRAPH_CHROMOSOMES############
+@app.callback(Output('3D_representation_chrom', 'figure'),
+              Input('Submit_tab1', 'n_clicks'))
+def update_3D_graph_chrom_tab1(n_clicks):
+    
+    sql_query = \
+"""SELECT Primary_SGDID, Start_coordinate, Stop_coordinate, Chromosome, Strand
+FROM SGD_features
+ORDER BY Start_coordinate
+"""
+    selected_loci = tools.get_locus_info("../SCERE.db", sql_query)
+
+    selected_loci_segments = plotly_segments.merge(selected_loci, on = "Primary_SGDID", how = "left", copy = False)
+    selected_loci_segments.index = range(1, len(selected_loci_segments) + 1)
+
+    colors = ["darkred", "red", "darkorange", "orange", "gold", "green", 
+              "mediumseagreen", "turquoise", "deepskyblue", "dodgerblue", 
+              "blueviolet", "purple", "magenta", "deeppink", "crimson", "black"]
+    selected_loci_segments = vis3D.get_color_discreet_3D(selected_loci_segments, "Chromosome", list(range(1, 17)), colors)
+    
+    return vis3D.genome_drawing(selected_loci_segments)     
 
 ############TAB2_UPLOAD############
 @app.callback(Output('output_data_upload_tab2', 'children'),
@@ -598,16 +661,60 @@ FROM SGD_features
 
 ############TAB3_NETWORK_TRESHOLD############
 @app.callback(Output('network', 'stylesheet'),
-              Input('treshold_slider', 'value'))
-def update_stylesheet(treshold):
+              Input('treshold_slider', 'value'),
+              Input('network', 'elements'))
+def update_stylesheet_(treshold, elements):
     new_styles = [{'selector': '[weight >' + str(treshold) + ']', 'style': {'opacity': 0}}]
-    
     stylesheet = basic_stylesheet + new_styles
     
     return stylesheet
 
+############TAB3_NETWORK_METRICS############
+@app.callback(Output('output_nodes_number_tab3', 'children'),
+              Input('treshold_slider', 'value'),
+              Input('network', 'elements'))
+def update_metrics_1(treshold, elements):
+    
+    subgraph_edges = pd.DataFrame(elements)
+    subgraph_edges = pd.json_normalize(subgraph_edges['data'])
+    subgraph_edges = subgraph_edges[subgraph_edges["weight"] < treshold]
+    
+    G = nx.from_pandas_edgelist(subgraph_edges, source="source", target="target")
+    
+    return "number of nodes : " + str(G.number_of_nodes())
 
+@app.callback(Output('output_edges_number_tab3', 'children'),
+              Input('treshold_slider', 'value'),
+              Input('network', 'elements'))
+def update_metrics_3(treshold, elements):
+    
+    subgraph_edges = pd.DataFrame(elements)
+    subgraph_edges = pd.json_normalize(subgraph_edges['data'])
+    subgraph_edges = subgraph_edges[subgraph_edges["weight"] < treshold]
+    
+    G = nx.from_pandas_edgelist(subgraph_edges, source="source", target="target")
+    
+    return "number of edges : " + str(G.number_of_edges())
 
+@app.callback(Output('Degrees_hist', 'figure'),
+              Input('treshold_slider', 'value'),
+              Input('network', 'elements'))
+def update_metrics_3(treshold, elements):
+    
+    subgraph_edges = pd.DataFrame(elements)
+    subgraph_edges = pd.json_normalize(subgraph_edges['data'])
+    subgraph_edges = subgraph_edges[subgraph_edges["weight"] < treshold]
+    
+    G = nx.from_pandas_edgelist(subgraph_edges, source="source", target="target")
+    
+    degrees = [val for (node, val) in G.degree()]
+    fig = px.histogram(degrees, nbins= 70, color_discrete_sequence=['#A0E8AF'])
+    fig.update_layout(plot_bgcolor = "white", 
+                      xaxis_showgrid = False, 
+                      yaxis_showgrid = False, 
+                      showlegend = True)
+    
+    return fig
 
 
 if __name__ == '__main__':

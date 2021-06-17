@@ -1,6 +1,4 @@
 import math
-
-import ipywidgets as widgets
 import matplotlib
 import matplotlib.pyplot as plt 
 import numpy as np

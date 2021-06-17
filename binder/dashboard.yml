@@ -1,20 +1,15 @@
-name: 3Dnetwork
+name: dashboard
 channels:
   - defaults
 dependencies:
   - matplotlib
   - plotly
-  - pyvis
   - networkx
   - python=3.8
   - pandas
   - colour
   - sqlite
-  - nodejs
-  - jupytext
-  - ipywidgets
-  - ipycytoscape
-  - jupyterlab
-  - jupyter-dash
   - dash-bootstrap-components
+  - dash_cytoscape
+  - pyarrow
 prefix: /home/thibault/miniconda3/envs/3Dnetwork
