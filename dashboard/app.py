@@ -42,6 +42,9 @@ basic_stylesheet = [{
                     {
                      'selector': 'node',
                      'style': {'label': 'data(label)'}}]
+colors = ["darkred", "red", "darkorange", "orange", "gold", "green", 
+          "mediumseagreen", "turquoise", "deepskyblue", "dodgerblue", 
+          "blueviolet", "purple", "magenta", "deeppink", "crimson", "black"]
 
 app = dash.Dash(name=name, assets_folder="./assets", external_stylesheets=[dbc.themes.LUX, fontawesome])
 app.title = name
@@ -236,6 +239,14 @@ visualization_tab1 = html.Div(
             [
                 dbc.Col(
                 [
+                    html.H5('Chromosomes repartition'),
+                    dcc.Graph(id = 'Chromosomes_repartition'),
+                ])
+            ]),
+            dbc.Row(
+            [
+                dbc.Col(
+                [
                     html.H3('3D Visualization'),
                     dcc.Graph(id = '3D_representation'),
                 ])
@@ -417,8 +428,10 @@ def update_styles(selected_columns):
 @app.callback(Output('2D_representation', 'figure'),
               Input('Submit_tab1', 'n_clicks'),
               State('GoTerm-dropdown', 'value'),
-              State('color-dropdown', 'value'))
-def update_2D_graphs_tab1(n_clicks, input1, input2):
+              State('color-dropdown', 'value'), 
+              State('datatable_tab1', 'derived_virtual_data'),
+              State('datatable_tab1', 'selected_columns'))
+def update_2D_graphs_tab1(n_clicks, GoTerm, color, data, column):
     
     sql_query_gobal = \
 """SELECT Primary_SGDID, count(SGDID), Feature_name, Start_coordinate, Stop_coordinate, Chromosome, Strand, GO_slim_term
@@ -431,7 +444,7 @@ ORDER BY Start_coordinate
 """SELECT Primary_SGDID, count(SGDID), Feature_name, Start_coordinate, Stop_coordinate, Chromosome, Strand, GO_slim_term
 FROM SGD_features, go_slim_mapping
 WHERE SGDID == Primary_SGDID
-AND (GO_slim_term == """ + "'" + str(input1) + "'" + """)
+AND (GO_slim_term == """ + "'" + str(GoTerm) + "'" + """)
 GROUP BY SGDID
 ORDER BY Start_coordinate
 """
@@ -439,33 +452,105 @@ ORDER BY Start_coordinate
     selected_loci = tools.get_locus_info("./static/SCERE.db", sql_query_specific)
     
     loci = pd.concat([all_loci, selected_loci]).drop_duplicates(subset=["Primary_SGDID"], keep = "last")
-    loci = vis2D.format_coordinates(loci, 6)
     
-    return vis2D.genome_drawing(loci, "discreet", "GO_slim_term", [str(input1)], [str(input2)])
+    if (column != []):
+       unfiltered_data = pd.DataFrame(data)
+       filtered_data = unfiltered_data[str(column[0])]
+       loci = loci.assign(FT_target = loci.Feature_name.isin(filtered_data))
+       
+       loci.loc[loci.FT_target == True, "colors_parameters"] = "Targets"
+       loci.loc[(loci.GO_slim_term == str(GoTerm)) & (loci.FT_target == True), "colors_parameters"] = str(GoTerm)
+       
+       loci = vis2D.format_coordinates(loci, 6) 
+       fig = vis2D.genome_drawing(loci, "discreet", "colors_parameters", [str(GoTerm), "Targets"], [str(color), "black"])
+       
+    else :
+       loci = vis2D.format_coordinates(loci, 6)
+       fig = vis2D.genome_drawing(loci, "discreet", "GO_slim_term", [str(GoTerm)], [str(color)])
+    
+    return fig
+
+############TAB1_CHROM_REPARTITION############
+@app.callback(Output('Chromosomes_repartition', 'figure'),
+              Input('Submit_tab1', 'n_clicks'),
+              State('datatable_tab1', 'derived_virtual_data'),
+              State('datatable_tab1', 'selected_columns'))
+def update_2D_graphs_tab1(n_clicks, data, column):
+    
+    sql_query = \
+"""SELECT Primary_SGDID, Feature_name, Start_coordinate, Stop_coordinate, Chromosome, Strand
+FROM SGD_features
+ORDER BY Start_coordinate
+"""
+    if (column != []):
+       unfiltered_data = pd.DataFrame(data)
+       filtered_data = unfiltered_data[str(column[0])]
+       
+       loci = tools.get_locus_info("../SCERE.db", sql_query)
+       loci = loci.assign(FT_target = loci.Feature_name.isin(filtered_data))
+       
+       loci = loci[loci.FT_target == True].drop(["FT_target"], axis = 1)
+       
+       fig = px.histogram(loci, x="Chromosome", nbins=30, range_x=[1, 17], color_discrete_sequence=['#A0E8AF'])
+       fig.update_layout(plot_bgcolor = "white", 
+                         xaxis_showgrid = False, 
+                         yaxis_showgrid = False, 
+                         showlegend = True)
+       
+       return fig
 
 ############TAB1_3D_GRAPH_FEATURE############
 @app.callback(Output('3D_representation', 'figure'),
               Input('Submit_tab1', 'n_clicks'),
               State('GoTerm-dropdown', 'value'),
-              State('color-dropdown', 'value'))
-def update_3D_graph_tab1(n_clicks, input1, input2):
+              State('color-dropdown', 'value'), 
+              State('datatable_tab1', 'derived_virtual_data'),
+              State('datatable_tab1', 'selected_columns'))
+def update_3D_graph_tab1(n_clicks, GoTerm, color, data, column):
+    
+    sql_query_gobal = \
+"""SELECT Primary_SGDID, count(SGDID), Feature_name, Start_coordinate, Stop_coordinate, Chromosome, Strand, GO_slim_term
+FROM SGD_features, go_slim_mapping
+WHERE SGDID == Primary_SGDID
+GROUP BY SGDID
+ORDER BY Start_coordinate
+"""
     
     sql_query = \
 """SELECT Primary_SGDID, Feature_name, Start_coordinate, Stop_coordinate, Chromosome, Strand, GO_slim_term
 FROM SGD_features, go_slim_mapping
 WHERE SGDID == Primary_SGDID 
-AND (GO_slim_term == """ + "'" + str(input1) + "'" + """)
+AND (GO_slim_term == """ + "'" + str(GoTerm) + "'" + """)
 GROUP BY SGDID
 ORDER BY Start_coordinate
 """
+    all_loci = tools.get_locus_info("./static/SCERE.db", sql_query_gobal)
     selected_loci = tools.get_locus_info("../SCERE.db", sql_query)
 
-    selected_loci_segments = plotly_segments.merge(selected_loci, on = "Primary_SGDID", how = "left", copy = False)
-    selected_loci_segments.index = range(1, len(selected_loci_segments) + 1)
+    if (column != []):
+       unfiltered_data = pd.DataFrame(data)
+       filtered_data = unfiltered_data[str(column[0])]
+       loci = all_loci.assign(FT_target = all_loci.Feature_name.isin(filtered_data))
+       loci = loci.assign(GoTerm = loci.Primary_SGDID.isin(selected_loci.Primary_SGDID))
+       
+       loci.loc[loci.FT_target == True, "colors_parameters"] = "Targets"
+       loci.loc[(loci.GoTerm == True) & (loci.FT_target == True), "colors_parameters"] = str(GoTerm)
+       
+       loci_segments = plotly_segments.merge(loci, on = "Primary_SGDID", how = "left", copy = False)
+       loci_segments.index = range(1, len(loci_segments) + 1)
     
-    selected_loci_segments = vis3D.get_color_discreet_3D(selected_loci_segments, "GO_slim_term", [str(input1)], [str(input2)])
+       loci_segments = vis3D.get_color_discreet_3D(loci_segments, "colors_parameters", [str(GoTerm), "Targets"], [str(color), "black"])
+       
+       fig = vis3D.genome_drawing(loci_segments)
+       
+    else :
+       selected_loci_segments = plotly_segments.merge(selected_loci, on = "Primary_SGDID", how = "left", copy = False)
+       selected_loci_segments.index = range(1, len(selected_loci_segments) + 1)
+       selected_loci_segments = vis3D.get_color_discreet_3D(selected_loci_segments, "GO_slim_term", [str(GoTerm)], [str(color)])
     
-    return vis3D.genome_drawing(selected_loci_segments)                    
+       fig = vis3D.genome_drawing(selected_loci_segments)
+    
+    return fig                   
 
 ############TAB1_3D_GRAPH_CHROMOSOMES############
 @app.callback(Output('3D_representation_chrom', 'figure'),
@@ -482,9 +567,6 @@ ORDER BY Start_coordinate
     selected_loci_segments = plotly_segments.merge(selected_loci, on = "Primary_SGDID", how = "left", copy = False)
     selected_loci_segments.index = range(1, len(selected_loci_segments) + 1)
 
-    colors = ["darkred", "red", "darkorange", "orange", "gold", "green", 
-              "mediumseagreen", "turquoise", "deepskyblue", "dodgerblue", 
-              "blueviolet", "purple", "magenta", "deeppink", "crimson", "black"]
     selected_loci_segments = vis3D.get_color_discreet_3D(selected_loci_segments, "Chromosome", list(range(1, 17)), colors)
     
     return vis3D.genome_drawing(selected_loci_segments)     
@@ -536,7 +618,7 @@ ORDER BY Start_coordinate
     whole_genome_segments.index = range(1, len(whole_genome_segments) + 1)
     
     whole_genome_segments = whole_genome_segments.merge(filtered_data, left_on = "Feature_name", right_on = "YORF", how = "left", copy = False)
-    whole_genome_segments.iloc[: , -1].fillna("lightgrey", inplace = True)
+    whole_genome_segments.iloc[: , -1].fillna("whitesmoke", inplace = True)
     
     fig = go.Figure(data=[go.Scatter3d(x = whole_genome_segments.x,
                                    y = whole_genome_segments.y,
@@ -555,6 +637,7 @@ ORDER BY Start_coordinate
     fig.update_layout(scene=dict(xaxis = dict(showgrid = False, backgroundcolor = "white"),
                              yaxis = dict(showgrid = False, backgroundcolor = "white"),
                              zaxis = dict(showgrid = False, backgroundcolor = "white")))
+    fig.update_layout(height=800)
     
     return fig     
 
@@ -621,7 +704,7 @@ FROM SGD_features
     
     return elements, slider_max, slider_min
 
-############TAB3_HIST_############
+############TAB3_HIST############
 @app.callback(Output('Distance_hist', 'figure'),
               Input('Submit_tab3', 'n_clicks'),
               Input("treshold_slider", "value"),
@@ -718,4 +801,4 @@ def update_metrics_3(treshold, elements):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug = True)

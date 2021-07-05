@@ -190,7 +190,7 @@ def genome_drawing(genome_data, mode, parameter,
                       x = "x",
                       y = "y",
                       color = "colors", 
-                      color_discrete_map = {"Other": "darkgrey", "background": "lightgrey", **color_discrete_map},
+                      color_discrete_map = {"Other": "darkgrey", "Background": "lightgrey", **color_discrete_map},
                       hover_name = "Primary_SGDID")
 
     fig.update_traces(line = dict(width = 9))
@@ -221,7 +221,7 @@ def get_color_discreet(genome_data, parameter, values):
     for v in values :
         genome_data.loc[genome_data[parameter] == v, "colors"] = v
     
-    genome_data.loc[genome_data["Chromosome"] == 0, "colors"] = "background"
+    genome_data.loc[genome_data["Chromosome"] == 0, "colors"] = "Background"
     
     return genome_data
 

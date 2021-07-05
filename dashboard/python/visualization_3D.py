@@ -213,6 +213,7 @@ def genome_drawing(whole_genome_segments):
     fig.update_layout(scene=dict(xaxis = dict(showgrid = False, backgroundcolor = "white"),
                                  yaxis = dict(showgrid = False, backgroundcolor = "white"),
                                  zaxis = dict(showgrid = False, backgroundcolor = "white")))
+    fig.update_layout(height=800)
     
     return fig
 
