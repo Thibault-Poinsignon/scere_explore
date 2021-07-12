@@ -462,7 +462,7 @@ ORDER BY Start_coordinate
        loci.loc[(loci.GO_slim_term == str(GoTerm)) & (loci.FT_target == True), "colors_parameters"] = str(GoTerm)
        
        loci = vis2D.format_coordinates(loci, 6) 
-       fig = vis2D.genome_drawing(loci, "discreet", "colors_parameters", [str(GoTerm), "Targets"], [str(color), "black"])
+       fig = vis2D.genome_drawing(loci, "discreet", "colors_parameters", [str(GoTerm), "Targets"], [str(color), "Black"])
        
     else :
        loci = vis2D.format_coordinates(loci, 6)
@@ -539,7 +539,7 @@ ORDER BY Start_coordinate
        loci_segments = plotly_segments.merge(loci, on = "Primary_SGDID", how = "left", copy = False)
        loci_segments.index = range(1, len(loci_segments) + 1)
     
-       loci_segments = vis3D.get_color_discreet_3D(loci_segments, "colors_parameters", [str(GoTerm), "Targets"], [str(color), "black"])
+       loci_segments = vis3D.get_color_discreet_3D(loci_segments, "colors_parameters", [str(GoTerm), "Targets"], [str(color), "blue"])
        
        fig = vis3D.genome_drawing(loci_segments)
        
@@ -801,4 +801,4 @@ def update_metrics_3(treshold, elements):
 
 
 if __name__ == '__main__':
-    app.run_server(debug = True)
+    app.run_server(debug = False)
