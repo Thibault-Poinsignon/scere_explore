@@ -12,4 +12,3 @@ dependencies:
   - dash-bootstrap-components
   - dash_cytoscape
   - pyarrow
-prefix: /home/thibault/miniconda3/envs/3Dnetwork
