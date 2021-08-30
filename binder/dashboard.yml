@@ -1,15 +1,15 @@
 name: dashboard
 channels:
   - defaults
+  - conda-forge
 dependencies:
+  - python=3.8
   - matplotlib
   - plotly
   - networkx
-  - python=3.8
   - pandas
   - colour
   - sqlite
   - dash-bootstrap-components
   - dash_cytoscape
   - pyarrow
-prefix: /home/thibault/miniconda3/envs/3Dnetwork
