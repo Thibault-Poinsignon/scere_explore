@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import math
 import sqlite3
+from scipy.spatial import distance_matrix
 
 atoms_coordinates = pd.read_csv('3dmodel.csv',
                           names = ("Atom","Atom_nb", "O", "EDG","chrom", "x", "y", "z", "1", "75","none"),
@@ -17,7 +18,6 @@ atoms_coordinates["chrom"] = atoms_coordinates["chrom"].replace(["A","B","C","D"
                                                                  9,10,11,12,13,14,15,16])
 
 atoms_coordinates["chrom"] = pd.to_numeric(atoms_coordinates.chrom)
-
 
 def format_segments_dataframe(chrom_number, atoms_coordinates):
     segments_coordinates = calcul_segments_coordinates(chrom_number, atoms_coordinates)
@@ -180,13 +180,12 @@ print(2)
 new_segments = pd.DataFrame(columns = ["x_start", "y_start", "z_start", "x_stop", "y_stop", "z_stop", "Primary_SGDID"])
 
 #loci_3Dloc stocke les loci et leur position dans l'espace (le start du segments associé au loci)
-#loci_3Dloc = pd.DataFrame(columns = ["Primary_SGDID", "x_start", "y_start", "z_start"])
 
 #on parcourt la liste des segments, avec leurs loci associés
 for s in range(0, len(list_segments_loci)):
 
     #liste des loci qui n'ont pas encore été associés à un segment
-    new_loci = list(set(list_segments_loci[s]) - set(list(new_segments["Primary_SGDID"].values)))
+    new_loci = [x for x in list_segments_loci[s] if x not in list(new_segments["Primary_SGDID"].values)]
 
     #dans le cas où il y a plus d'un loci associé au segment, on le subdivise par le nombre de loci.
     if len(new_loci) > 0:
@@ -227,21 +226,20 @@ loci_3Dloc = loci_3Dloc[- loci_3Dloc["Primary_SGDID"].isna()]
 
 loci_3Dloc = loci_3Dloc.sort_values("Primary_SGDID")
 loci_3Dloc.index = range(1, len(loci_3Dloc) + 1)
+
+Primary_SGDID = loci_3Dloc["Primary_SGDID"]
+loci_3Dloc = loci_3Dloc.drop(["Primary_SGDID"], axis=1)
+loci_3Dloc = loci_3Dloc.to_numpy()
+
 print(3)
-adjacency_matrix = pd.DataFrame(columns = range(1, len(loci_3Dloc) + 1), index = range(1,len(loci_3Dloc) + 1))
+distances = pd.DataFrame(distance_matrix(loci_3Dloc, loci_3Dloc))
 
-for i in adjacency_matrix.index:
-    for j in range(i + 1, len(adjacency_matrix.index) + 1):
-        adjacency_matrix[i][j] = math.sqrt((loci_3Dloc.x_start[i] - loci_3Dloc.x_start[j]) ** 2 +
-                                           (loci_3Dloc.y_start[i] - loci_3Dloc.y_start[j]) ** 2 +
-                                           (loci_3Dloc.z_start[i] - loci_3Dloc.z_start[j]) ** 2)
+distances.index = Primary_SGDID
+distances.columns = Primary_SGDID
+distances.columns.name = "Primary_SGDID_bis"
+distances.values[np.triu_indices_from(distances, 0)] = np.nan
 
-adjacency_matrix.index = loci_3Dloc["Primary_SGDID"]
-loci_3Dloc = loci_3Dloc.rename(columns={"Primary_SGDID": "Primary_SGDID_bis"})
-adjacency_matrix.columns = loci_3Dloc["Primary_SGDID_bis"]
-
-edges_list = adjacency_matrix.stack().dropna().reset_index()
+edges_list = distances.stack().dropna().reset_index()
 edges_list.rename(columns = {0: "3D_distances"}, inplace = True)
 edges_list = edges_list.sort_values(by="Primary_SGDID")
-print(edges_list.dtypes)
 edges_list.to_parquet('edge_list_new_bis.parquet.gzip', engine = "pyarrow")
